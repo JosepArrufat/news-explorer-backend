@@ -50,6 +50,7 @@ REST API for the News Explorer app. Handles user authentication, registration, a
 
 | Method | Endpoint | Description | Auth required |
 |---|---|---|---|
+| GET | `/news?q=keyword&from=YYYY-MM-DD&to=YYYY-MM-DD` | Search NewsAPI through the backend proxy | No |
 | GET | `/articles` | Get all saved articles for the current user | Yes |
 | POST | `/articles` | Save a new article | Yes |
 | DELETE | `/articles/:articleId` | Delete a saved article | Yes |
@@ -102,6 +103,7 @@ Create a `.env` file in the root:
 NODE_ENV=development
 JWT_SECRET=your_jwt_secret
 PORT=3001
+NEWS_API_KEY=your_newsapi_key
 ```
 
 Then start the server:
