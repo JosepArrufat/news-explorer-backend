@@ -6,46 +6,28 @@ const helmet = require('helmet');
 const routes = require('./routes/index');
 const error = require('./middlewares/error');
 
-const { NODE_ENV, MONGO_URL } = process.env;
+require('dotenv').config();
+const { NODE_ENV, MONGO_URL, ALLOWED_ORIGIN } = process.env;
 const { requestLogger, errorLogger } = require('./middlewares/logger');
 const rateLimiter = require('./utils/rateLimiter');
 
 const app = express();
-require('dotenv').config();
-const { PORT = 3000 } = process.env;
+const { PORT = 3001 } = process.env;
+
 mongoose.connect(NODE_ENV === 'production' ? MONGO_URL : 'mongodb://localhost:27017/news-explorer', {
   useNewUrlParser: true,
 });
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(helmet());
 app.use(requestLogger);
-app.use((req, res, next) => {
-  res.header(
-    'Access-Control-Allow-Origin',
-    'https://pep.news.students.nomoredomainssbs.ru/',
-  );
-  res.header(
-    'Access-Control-Allow-Headers',
-    'Origin, X-Requested-With, Content-Type, Accept, authorization',
-  );
-  res.header('Access-Control-Allow-Methods', 'GET,HEAD,PUT,PATCH,POST,DELETE');
-  next();
-});
-app.use((req, res, next) => {
-  res.header(
-    'Access-Control-Allow-Origin',
-    'https://newsapi.org/v2',
-  );
-  res.header(
-    'Access-Control-Allow-Headers',
-    'Origin, X-Requested-With, Content-Type, Accept, authorization',
-  );
-  res.header('Access-Control-Allow-Methods', 'GET');
-  next();
-});
 
-app.use(cors());
+app.use(cors({
+  origin: ALLOWED_ORIGIN || 'http://localhost:3000',
+  allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'authorization'],
+  methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
+}));
 app.options('*', cors());
 app.use(rateLimiter);
 
@@ -55,5 +37,5 @@ app.use(errorLogger);
 app.use('', error);
 
 app.listen(PORT, () => {
-  console.log('App running on port 3000...');
+  console.log(`App running on port ${PORT}...`);
 });
