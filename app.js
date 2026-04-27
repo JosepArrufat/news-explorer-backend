@@ -6,7 +6,8 @@ const helmet = require('helmet');
 const routes = require('./routes/index');
 const error = require('./middlewares/error');
 
-require('dotenv').config();
+require('dotenv').config({ path: process.env.NODE_ENV === 'production' ? 'production.env' : '.env' });
+
 const { NODE_ENV, MONGO_URL, ALLOWED_ORIGIN } = process.env;
 const { requestLogger, errorLogger } = require('./middlewares/logger');
 const rateLimiter = require('./utils/rateLimiter');
