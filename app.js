@@ -23,12 +23,14 @@ app.use(express.urlencoded({ extended: true }));
 app.use(helmet());
 app.use(requestLogger);
 
-app.use(cors({
+const corsOptions = {
   origin: ALLOWED_ORIGIN || 'http://localhost:3000',
   allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'authorization'],
   methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
-}));
-app.options('*', cors());
+};
+
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 app.use(rateLimiter);
 
 app.use(routes);
