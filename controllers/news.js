@@ -11,6 +11,7 @@ const {
 const ErrorHandler = require('../utils/errorClass');
 
 const NEWS_API_BASE_URL = 'https://newsapi.org/v2';
+const NEWS_API_USER_AGENT = 'news-explorer-backend/1.0';
 
 const fetchNews = (keyword, from, to) => new Promise((resolve, reject) => {
   const apiKey = process.env.NEWS_API_KEY;
@@ -27,7 +28,12 @@ const fetchNews = (keyword, from, to) => new Promise((resolve, reject) => {
   requestUrl.searchParams.set('to', to);
   requestUrl.searchParams.set('apiKey', apiKey);
 
-  https.get(requestUrl, (response) => {
+  https.get(requestUrl, {
+    headers: {
+      'User-Agent': NEWS_API_USER_AGENT,
+      Accept: 'application/json',
+    },
+  }, (response) => {
     let rawData = '';
 
     response.on('data', (chunk) => {
