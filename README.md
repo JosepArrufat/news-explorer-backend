@@ -4,6 +4,11 @@ REST API for the News Explorer app. Handles user authentication, registration, a
 
 🔗 **Frontend repo:** [news-explorer-frontend](https://github.com/JosepArrufat/news-explorer-frontend)
 
+## Live API
+
+- Backend API: [https://news-explorer-backend-ev2z.onrender.com](https://news-explorer-backend-ev2z.onrender.com)
+- Frontend demo: [https://news-explorer-frontend-josep.vercel.app/](https://news-explorer-frontend-josep.vercel.app/)
+
 ---
 
 ## Features
@@ -14,6 +19,7 @@ REST API for the News Explorer app. Handles user authentication, registration, a
 - Request validation with Celebrate/Joi
 - Rate limiting and security headers with Helmet
 - Request and error logging with Winston
+- NewsAPI proxy endpoint so the frontend can search without browser CORS issues
 
 ---
 
@@ -117,3 +123,18 @@ npm start
 ```
 
 The API runs on `http://localhost:3001` by default.
+
+---
+
+## Deployment Notes
+
+- The backend must be deployed with `NEWS_API_KEY`, `MONGO_URL`, `JWT_SECRET`, and `ALLOWED_ORIGIN` configured.
+- `ALLOWED_ORIGIN` should match the frontend domain exactly, without a trailing slash.
+- The `/news` endpoint proxies NewsAPI server-side so the frontend never calls NewsAPI directly from the browser.
+
+## Architecture
+
+- Vercel hosts the React frontend.
+- Render hosts the Express API.
+- MongoDB stores saved articles and user data.
+- NewsAPI is called only from the backend.
