@@ -1,3 +1,4 @@
+const https = require('https');
 const News = require('../models/newsSchema');
 const {
   BAD_REQUEST,
@@ -8,6 +9,65 @@ const {
   FORBIDDEN,
 } = require('../utils/errorHandlers');
 const ErrorHandler = require('../utils/errorClass');
+
+const NEWS_API_BASE_URL = 'https://newsapi.org/v2';
+const NEWS_API_USER_AGENT = 'news-explorer-backend/1.0';
+
+const fetchNews = (keyword, from, to) => new Promise((resolve, reject) => {
+  const apiKey = process.env.NEWS_API_KEY;
+
+  if (!apiKey) {
+    reject(new ErrorHandler('News API key is not configured', BAD_REQUEST));
+    return;
+  }
+
+  const requestUrl = new URL(`${NEWS_API_BASE_URL}/everything`);
+  requestUrl.searchParams.set('q', keyword);
+  requestUrl.searchParams.set('pageSize', '100');
+  requestUrl.searchParams.set('from', from);
+  requestUrl.searchParams.set('to', to);
+  requestUrl.searchParams.set('apiKey', apiKey);
+
+  https.get(requestUrl, {
+    headers: {
+      'User-Agent': NEWS_API_USER_AGENT,
+      Accept: 'application/json',
+    },
+  }, (response) => {
+    let rawData = '';
+
+    response.on('data', (chunk) => {
+      rawData += chunk;
+    });
+
+    response.on('end', () => {
+      try {
+        const parsedData = JSON.parse(rawData);
+        if (response.statusCode >= 200 && response.statusCode < 300) {
+          resolve(parsedData);
+        } else {
+          reject(new ErrorHandler(parsedData.message || 'News request failed', response.statusCode || 500));
+        }
+      } catch (error) {
+        reject(new ErrorHandler('Unable to parse news response', 500));
+      }
+    });
+  }).on('error', (error) => {
+    reject(error);
+  });
+});
+
+const searchNews = (req, res, next) => {
+  const { q, from, to } = req.query;
+
+  if (!q || !from || !to) {
+    return next(new ErrorHandler('Query parameters q, from, and to are required', BAD_REQUEST));
+  }
+
+  return fetchNews(q, from, to)
+    .then((data) => res.status(SUCCES).send(data))
+    .catch(next);
+};
 
 const getUserSavedNews = (req, res, next) => {
   News.find({ owner: req.user._id })
@@ -85,6 +145,7 @@ const deleteNews = (req, res, next) => {
 };
 
 module.exports = {
+  searchNews,
   getUserSavedNews,
   deleteNews,
   addNews,
